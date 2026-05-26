@@ -2,6 +2,19 @@ import type { Book, BookInput } from "../types";
 
 const BASE_URL = "https://6a14703c6c7db8aac0548708.mockapi.io/api/v1/books";
 
+function normalizeBook(item: unknown): Book {
+    const obj = (item as Record<string, unknown>) || {};
+    const pub = obj.publicationYear;
+    return {
+        id: String(obj.id ?? ""),
+        title: String(obj.title ?? ""),
+        author: String(obj.author ?? ""),
+        genre: String(obj.genre ?? ""),
+        publicationYear:
+            typeof pub === "number" ? pub : Number(String(pub ?? "0")),
+    };
+}
+
 export const bookApi = {
     //get all
     getAll: async (): Promise<Book[]> => {
@@ -11,10 +24,7 @@ export const bookApi = {
         }
 
         const data = await response.json();
-        return data.map((item: any) => ({
-            ...item,
-            publicationYear: Number(item.publicationYear),
-        }));
+        return (Array.isArray(data) ? data : []).map((d) => normalizeBook(d));
     },
 
     // create new
@@ -26,7 +36,7 @@ export const bookApi = {
         });
         if (!response.ok) throw new Error("Failed to add new book");
         const data = await response.json();
-        return { ...data, publicationYear: Number(data.publicationYear) };
+        return normalizeBook(data);
     },
 
     //update
@@ -38,7 +48,7 @@ export const bookApi = {
         });
         if (!response.ok) throw new Error("Failed to update");
         const data = await response.json();
-        return { ...data, publicationYear: Number(data.publicationYear) };
+        return normalizeBook(data);
     },
 
     //delete

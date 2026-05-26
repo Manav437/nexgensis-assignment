@@ -76,10 +76,12 @@ export const BookFormModal: React.FC<BookFormModalProps> = ({
                 publicationYear: yearNum,
             });
             onClose();
-        } catch (err: any) {
-            setValidationError(
-                err.message || "Something went wrong while pushing changes.",
-            );
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setValidationError(err.message);
+            } else {
+                setValidationError("Something went wrong while pushing changes.");
+            }
         } finally {
             setIsSubmitting(false);
         }
